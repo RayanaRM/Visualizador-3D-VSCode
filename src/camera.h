@@ -33,7 +33,7 @@ const float ZOOM = 45.0f;
 class Camera
 {
 public:
-    // camera Attributes
+    // camera Attributes for object One
     glm::vec3 Position;
     glm::vec3 Front;
     glm::vec3 Up;
@@ -43,9 +43,23 @@ public:
     glm::vec3 positionTranslate = glm::vec3(0.0f, 0.0f, 0.0f);
     float angle = 1.0f;
 
-    // euler Angles
+    // camera Attributes for object Two
+    glm::vec3 Position1;
+    glm::vec3 Front1;
+    glm::vec3 Up1;
+    glm::vec3 Right1;
+    glm::vec3 WorldUp1;
+    glm::vec3 axis1 = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 positionTranslate1 = glm::vec3(0.0f, 0.0f, 0.0f);
+    float angle1 = 1.0f;
+
+    // euler Angles for 
     float Yaw;
     float Pitch;
+
+    // euler Angles
+    float Yaw1;
+    float Pitch1;
 
     // camera options
     float MovementSpeed;
@@ -54,21 +68,29 @@ public:
 
     // variaveis de controle
     float escala = 0.1f;
+
+    float escala1 = 0.1f;
+
     float type;
     float inc;
 
     // constructor with vectors
-    Camera(glm::vec3 position, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(glm::vec3 position, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), Front1(glm::vec3(0.0f, 0.0f, 1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = position;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
+
+        Position1 = glm::vec3(10.0f, 0.0f, 15.0f);
+        WorldUp1 = up;
+        Yaw1 = yaw;
+        Pitch1 = pitch;
         updateCameraVectors();
     }
 
     glm::mat4 GetViewMatrix()
-    {
+    {     
         return glm::lookAt(Position, Position + Front, Up);
     }
 
@@ -80,11 +102,24 @@ public:
         return model;
     }
 
-    void ProcessKeyboard(KEY_INPUTS key, float deltaTime)
+    glm::mat4 GetViewMatrix2()
+    {     
+        return glm::lookAt(Position1, Position1 + Front1, Up1);
+    }
+
+    glm::mat4 GetModelMatrix2(glm::mat4 model)
+    {
+        model = glm::rotate(model, angle1, axis1);
+        model = glm::translate(model, positionTranslate1);
+        model = glm::scale(model, glm::vec3(escala1, escala1, escala1));
+        return model;
+    }
+
+    void ProcessKeyboard(KEY_INPUTS key, float deltaTime, bool isSelected1, bool isSelected2)
     {
         float velocity = MovementSpeed * deltaTime;
 
-        // Teclas de controle (rotaçâo/ translação)
+        // Teclas de controle (rotaï¿½ï¿½o/ translaï¿½ï¿½o)
         if (key == TRANSLACAO) {
             type = 1;
         }
@@ -101,30 +136,64 @@ public:
         }
 
         // movimentacao da camera
-        if (key == FORWARD)
-            Position += Front * velocity;
-        if (key == BACKWARD)
-            Position -= Front * velocity;
-        if (key == LEFT)
-            Position -= Right * velocity;
-        if (key == RIGHT)
-            Position += Right * velocity;
-
-        // Rotação
+        if (key == FORWARD){
+            if(isSelected1)
+                Position += Front * velocity;
+            if(isSelected2)
+                Position1 += Front1 * velocity;
+        }
+        if (key == BACKWARD){
+            if(isSelected1)
+                Position -= Front * velocity;
+            if(isSelected2)
+                Position1 -= Front1 * velocity;
+        }
+        if (key == LEFT){
+            if(isSelected1)
+                Position -= Right * velocity;
+            if(isSelected2)
+                Position1 -= Right1 * velocity;
+        }
+        if (key == RIGHT){
+            if(isSelected1)
+                Position += Right * velocity;
+            if(isSelected2)
+                Position1 += Right1 * velocity;
+        }
+        // Rotaï¿½ï¿½o
         if (key == X  && type == 2) {
-            angle = (GLfloat)glfwGetTime();
-            axis = glm::vec3(1.0f, 0.0f, 0.0f);
+            if(isSelected1){
+                angle = (GLfloat)glfwGetTime();
+                axis = glm::vec3(1.0f, 0.0f, 0.0f);
+            }
+            if(isSelected2){
+                angle1 = (GLfloat)glfwGetTime();
+                axis1 = glm::vec3(1.0f, 0.0f, 0.0f);
+            }
         }
         if (key == Y && type == 2) {
-            angle = (GLfloat)glfwGetTime();
-            axis = glm::vec3(0.0f, 1.0f, 0.0f);
+            if(isSelected1){
+                angle = (GLfloat)glfwGetTime();
+                axis = glm::vec3(0.0f, 1.0f, 0.0f);
+            }
+            if(isSelected2){
+                angle1 = (GLfloat)glfwGetTime();
+                axis1 = glm::vec3(0.0f, 1.0f, 0.0f);
+            }
         }
         if (key == Z && type == 2) {
-            angle = (GLfloat)glfwGetTime();
-            axis = glm::vec3(0.0f, 0.0f, 1.0f);
+            if(isSelected1){
+                angle = (GLfloat)glfwGetTime();
+                axis = glm::vec3(0.0f, 0.0f, 1.0f);
+            }
+            if(isSelected2){
+                angle1 = (GLfloat)glfwGetTime();
+                axis1 = glm::vec3(0.0f, 0.0f, 1.0f);
+            }
+
         }
 
-        // Translação
+        // Translaï¿½ï¿½o
         if (key == X && type == 1) {
             positionTranslate[0] += inc == 1 ? 0.01 : -0.01;
         }
@@ -179,9 +248,14 @@ private:
         front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         front.y = sin(glm::radians(Pitch));
         front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+
         Front = glm::normalize(front);
         Right = glm::normalize(glm::cross(Front, WorldUp));
         Up = glm::normalize(glm::cross(Right, Front));
+
+        Front1 = glm::normalize(front);
+        Right1 = glm::normalize(glm::cross(Front1, WorldUp));
+        Up1 = glm::normalize(glm::cross(Right1, Front1));
     }
 };
 #endif

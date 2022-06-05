@@ -22,6 +22,10 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 string img_name;
 
+
+void setObject1(Shader shader);
+void setObject2(Shader shader);
+
 // camera
 Camera camera(glm::vec3(20.0f, 0.0f, 15.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -33,7 +37,8 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // selection
-bool isSelected = false;
+bool isSelected1 = false;
+bool isSelected2 = false;
 
 int main()
 {
@@ -78,9 +83,6 @@ int main()
 
     Shader currentShader = ourShader;
 
-    Model ourModel("modelos/Pokemon/Pikachu.obj");
-
-
     while (!glfwWindowShouldClose(window))
     {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -91,28 +93,14 @@ int main()
 
         glClearColor(0.933f, 0.933f, 0.929f, 1.0f); //cor de fundo
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        currentShader = (isSelected == true) ? selectedShader : ourShader;
+        
+        currentShader = (isSelected1 == true) ? selectedShader : ourShader;
         currentShader.use();
+        setObject1(currentShader);
 
-        // matrizes view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        currentShader.setMat4("projection", projection);
-        GLint projectionLoc = glGetUniformLocation(currentShader.ID, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, false, glm::value_ptr(projection));
-
-        glm::mat4 view = camera.GetViewMatrix();
-        currentShader.setMat4("view", view);
-        GLint viewLoc = glGetUniformLocation(currentShader.ID, "view");
-        glUniformMatrix4fv(viewLoc, 1, false, glm::value_ptr(view));
-
-        // model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = camera.GetModelMatrix(model);
-        currentShader.setMat4("model", model);
-        GLint modelLoc = glGetUniformLocation(currentShader.ID, "model");
-        glUniformMatrix4fv(modelLoc, 1, false, glm::value_ptr(model));
-        ourModel.Draw(currentShader);
+        currentShader = (isSelected2 == true) ? selectedShader : ourShader;
+        currentShader.use();
+        setObject2(currentShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -129,37 +117,37 @@ void processInput(GLFWwindow* window)
 
     // movimenta camera
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        camera.ProcessKeyboard(FORWARD, deltaTime, isSelected1, isSelected2);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        camera.ProcessKeyboard(BACKWARD, deltaTime, isSelected1, isSelected2);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        camera.ProcessKeyboard(LEFT, deltaTime, isSelected1, isSelected2);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        camera.ProcessKeyboard(RIGHT, deltaTime, isSelected1, isSelected2);
 
     // altera entre translacao e rotacao
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-        camera.ProcessKeyboard(ROTACAO, deltaTime);
+        camera.ProcessKeyboard(ROTACAO, deltaTime, isSelected1, isSelected2);
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-        camera.ProcessKeyboard(TRANSLACAO, deltaTime);
+        camera.ProcessKeyboard(TRANSLACAO, deltaTime, isSelected1, isSelected2);
 
     // incrementa ou decrementa movimento de translacao
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-        camera.ProcessKeyboard(I, deltaTime);
+        camera.ProcessKeyboard(I, deltaTime, isSelected1, isSelected2);
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-        camera.ProcessKeyboard(U, deltaTime);
+        camera.ProcessKeyboard(U, deltaTime, isSelected1, isSelected2);
 
     // eixos
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-        camera.ProcessKeyboard(X, deltaTime);
+        camera.ProcessKeyboard(X, deltaTime, isSelected1, isSelected2);
     if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
-        camera.ProcessKeyboard(Y, deltaTime);
+        camera.ProcessKeyboard(Y, deltaTime, isSelected1, isSelected2);
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-        camera.ProcessKeyboard(Z, deltaTime);
+        camera.ProcessKeyboard(Z, deltaTime, isSelected1, isSelected2);
 
     // escala
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        camera.ProcessKeyboard(ESCALA, deltaTime);
+        camera.ProcessKeyboard(ESCALA, deltaTime, isSelected1, isSelected2);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -193,10 +181,64 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
+void setObject1(Shader shader)
+{
+        Model ourModel("modelos/Pokemon/Pikachu.obj");
+
+        // matrizes view/projection transformations
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        shader.setMat4("projection", projection);
+        GLint projectionLoc = glGetUniformLocation(shader.ID, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, false, glm::value_ptr(projection));
+
+        glm::mat4 view = camera.GetViewMatrix();
+        shader.setMat4("view", view);
+        GLint viewLoc = glGetUniformLocation(shader.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, false, glm::value_ptr(view));
+
+        // model
+        glm::mat4 model = glm::mat4(1.0f);
+        model = camera.GetModelMatrix(model);
+        shader.setMat4("model", model);
+        GLint modelLoc = glGetUniformLocation(shader.ID, "model");
+        glUniformMatrix4fv(modelLoc, 1, false, glm::value_ptr(model));
+        ourModel.Draw(shader);
+}
+
+void setObject2(Shader shader)
+{
+        Model ourModel2("modelos/Pokemon/PikachuF.obj");
+
+        // matrizes view/projection transformations
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        shader.setMat4("projection", projection);
+        GLint projectionLoc = glGetUniformLocation(shader.ID, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, false, glm::value_ptr(projection));
+
+        glm::mat4 view = camera.GetViewMatrix2();
+        shader.setMat4("view", view);
+        GLint viewLoc = glGetUniformLocation(shader.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, false, glm::value_ptr(view));
+
+        // model
+        glm::mat4 model = glm::mat4(1.0f);
+        model = camera.GetModelMatrix2(model);
+        shader.setMat4("model", model);
+        GLint modelLoc = glGetUniformLocation(shader.ID, "model");
+        glUniformMatrix4fv(modelLoc, 1, false, glm::value_ptr(model));
+        ourModel2.Draw(shader);
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_C && action == GLFW_PRESS)
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS)
     {
-        isSelected = !isSelected;
+        isSelected1 = !isSelected1;
+    }
+
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+    {
+        isSelected2 = !isSelected2;
     }
 }
+
