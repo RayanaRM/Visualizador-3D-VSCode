@@ -56,19 +56,20 @@ public:
 
     float type;
     float inc;
+    int mvm = 0;
 
     // constructor with vectors
     Camera(glm::vec3 position, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         for(unsigned int i = 0; i < 10; i++){
-            Position[i] = glm::vec3(position[0]/(i+1), position[1], position[2]);
+            Position[i] = glm::vec3(position[0]+(i*5), position[1], position[2]);
             WorldUp[i] = up;
            
             Front[i] = glm::vec3(0.0f, 0.0f, -1.0f);
             axis[i] = glm::vec3(0.0f, 1.0f, 0.0f);
             positionTranslate[i] = glm::vec3(0.0f, 0.0f, 0.0f);
             angle[i] = 1.0f;
-            escala[i] = 0.1f;
+            escala[i] = 0.5f;
         }
 
         Yaw = yaw;
@@ -81,11 +82,24 @@ public:
         return glm::lookAt(Position[id], Position[id] + Front[id], Up[id]);
     }
 
-    glm::mat4 GetModelMatrix(glm::mat4 model, int id)
+    glm::mat4 GetModelMatrix(glm::mat4 model, Objeto obj, std::vector<glm::vec3*>* pontosCurva)
     {
+        int id = obj.id;
         model = glm::rotate(model, angle[id], axis[id]);
         model = glm::translate(model, positionTranslate[id]);
         model = glm::scale(model, glm::vec3(escala[id], escala[id], escala[id]));
+
+        if(obj.escala > 0)
+            escala[obj.id] = obj.escala;
+
+        if(obj.hasCurves) {
+            if(pontosCurva->size() - 5 == mvm)
+                mvm = 0;
+
+            model = glm::translate(model, glm::vec3(pontosCurva->at(mvm)->x, pontosCurva->at(mvm)->y, pontosCurva->at(mvm)->z));
+            angle[id] = -calcularAnguloOBJ(mvm, mvm + 5, pontosCurva);
+            mvm++;
+        }					
         return model;
     }
 
@@ -157,6 +171,26 @@ public:
                 escala[objeto.id] = 0.01f;
         }
     }
+
+float calcularAnguloOBJ(int indexA, int indexB, std::vector<glm::vec3*>* pontosCurva) {
+
+	glm::vec3* a = pontosCurva->at(indexA);
+	glm::vec3* b;
+
+	if (indexA == pontosCurva->size() - 5) {
+		b = pontosCurva->at(0);
+	}
+	else {
+		b = pontosCurva->at(indexB);
+	}
+
+	GLfloat dx = b->x - a->x;
+	GLfloat dz = b->z - a->z;
+
+	GLfloat angle = glm::atan(dz, dx);
+
+	return angle;
+}
 
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {

@@ -14,12 +14,16 @@ class Objeto
 public:
     bool isSelected;
     int id;
+    bool hasCurves;
+    float escala;
 
     // constructor with vectors
-    Objeto(int id, bool isSelected)
+    Objeto(int id, bool isSelected, bool hasCurves, float escala)
     {
         this->id = id;
         this->isSelected = isSelected;
+        this->hasCurves = hasCurves;
+        this->escala = escala;
     }
 };
 #endif

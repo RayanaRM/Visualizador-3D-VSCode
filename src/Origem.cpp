@@ -11,6 +11,8 @@
 #include "objeto.h"
 
 #include <iostream>
+#include <string>
+#include <fstream>
 #include <vector>
 
 
@@ -19,6 +21,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void lerArqCurva(const GLchar* path);
+void ajustarTamanhoCurva(std::vector<glm::vec3*>* points, float factor);
+float calcularAnguloOBJ(int indexA, int indexB);
+
+int textureNum = 0;
+//Tamanho da curva
+float tamanhoCurva = 20.0f;
+
+std::vector<glm::vec3*>* pontosCurva = new std::vector<glm::vec3*>();
+std::vector<glm::vec3*>* scaledCurvePoints = new std::vector<glm::vec3*>();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -26,12 +38,12 @@ const unsigned int SCR_HEIGHT = 600;
 string img_name;
 
 
-void setObject(Shader shader, string path, Objeto objeto);
+void setObject(Shader shader, Objeto objeto, Model modelo);
 
 vector <Objeto> objetos;
 
 // camera
-Camera camera(glm::vec3(20.0f, 0.0f, 15.0f));
+Camera camera(glm::vec3(0.0f, 10.0f, 30.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -43,6 +55,8 @@ float lastFrame = 0.0f;
 // selection
 bool isSelected1 = false;
 bool isSelected2 = false;
+
+float angle = 0.0f;
 
 int main()
 {
@@ -80,14 +94,23 @@ int main()
 
     stbi_set_flip_vertically_on_load(false);
 
-    glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 
     Shader ourShader("shaders/shader_model.vs", "shaders/shader_model.fs");
     Shader selectedShader("shaders/shader_model.vs", "shaders/selected_shader_model.fs");
 
     Shader currentShader = ourShader;
-    objetos.push_back(Objeto(1, true));
-    objetos.push_back(Objeto(2, false));
+    objetos.push_back(Objeto(0, true, true, 1.0f));
+    objetos.push_back(Objeto(1, false, false, 0.5f));
+    objetos.push_back(Objeto(2, false, false, 0.1f));
+
+
+    Model modelo1("modelos/Pokemon/Pikachu.obj");
+    Model modelo2("modelos/c/mesa01.obj");
+    Model modelo3("modelos/Pokemon/PikachuF.obj");
+
+    lerArqCurva("originalCurve.txt");
+	ajustarTamanhoCurva(pontosCurva, tamanhoCurva);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -102,11 +125,15 @@ int main()
         
         currentShader = (objetos[0].isSelected) ? selectedShader : ourShader;
         currentShader.use();
-        setObject(currentShader, "modelos/Pokemon/Pikachu.obj", objetos[0]);
+        setObject(currentShader, objetos[0], modelo1);
 
         currentShader = (objetos[1].isSelected) ? selectedShader : ourShader;
         currentShader.use();
-        setObject(currentShader, "modelos/Pokemon/PikachuF.obj", objetos[1]);
+        setObject(currentShader, objetos[1], modelo2);
+
+        currentShader = (objetos[2].isSelected) ? selectedShader : ourShader;
+        currentShader.use();
+        setObject(currentShader, objetos[2], modelo3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -191,10 +218,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-void setObject(Shader shader, string path, Objeto objeto)
+void setObject(Shader shader, Objeto objeto, Model modelo)
 {
-        Model ourModel(path);
-
         // matrizes view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
@@ -207,34 +232,78 @@ void setObject(Shader shader, string path, Objeto objeto)
         glUniformMatrix4fv(viewLoc, 1, false, glm::value_ptr(view));
 
         // model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = camera.GetModelMatrix(model, objeto.id);
-        shader.setMat4("model", model);
+        glm::mat4 modelMatrix = glm::mat4(1.0f);
+        modelMatrix = camera.GetModelMatrix(modelMatrix, objeto, pontosCurva);
+        shader.setMat4("model", modelMatrix);
         GLint modelLoc = glGetUniformLocation(shader.ID, "model");
-        glUniformMatrix4fv(modelLoc, 1, false, glm::value_ptr(model));
-        ourModel.Draw(shader);
+        glUniformMatrix4fv(modelLoc, 1, false, glm::value_ptr(modelMatrix));
+        modelo.Draw(shader);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    Objeto selecionado = objetos[0];
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
     {
         for(unsigned int i = 0; i < objetos.size(); i++){
-            if((i+1) < objetos.size()){
-                objetos[i].isSelected = false;
-                objetos[i+1].isSelected = true;
-            }
+                if(objetos[i].isSelected){
+                    selecionado = objetos[i];
+                    objetos[i].isSelected = false;
+                }
         }
+        if((selecionado.id+1) < objetos.size())
+            objetos[selecionado.id+1].isSelected = true;
+        else
+            objetos[0].isSelected = true;
     }
+}
+void ajustarTamanhoCurva(std::vector<glm::vec3*>* points, float factor) {
+	for (int i = 0; i < points->size(); i++) {
+		scaledCurvePoints->push_back(new glm::vec3(points->at(i)->x*factor, points->at(i)->y, points->at(i)->z*factor));
+	}
+	pontosCurva = scaledCurvePoints;
+}
 
-    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-    {
-        for(unsigned int i = objetos.size()-1; i > 0; i--){
-            if((i-1) >= 0){
-                objetos[i].isSelected = false;
-                objetos[i-1].isSelected = true;
-            }
-        }
-    }
+void lerArqCurva(const GLchar* path) {
+	std::ifstream file;
+	file.exceptions(std::ifstream::badbit);
+
+	try {
+		file.open(path);
+
+		if (!file.is_open()) {
+			std::cout << "ERRO::Pontos da Curva::ERRO NO ARQUIVO";
+		}
+
+		std::string line, temp;
+		std::stringstream sstream;
+		int lineCounter = 1;
+
+		while (!file.eof()) {
+
+			sstream = std::stringstream();
+			line = temp = "";
+
+			//get first line of the file
+			std::getline(file, line);
+
+			//get content of the line
+			sstream << line;
+			sstream >> temp;
+
+			if (temp == "v") {
+				float x, y, z;
+				sstream >> x >> y >> z;
+				pontosCurva->push_back(new glm::vec3(x, y, z));
+			}
+			lineCounter++;
+		}
+		file.close();
+	}
+	catch (const std::ifstream::failure& e) {
+		if (!file.eof()) {
+			std::cout << "ERROR::Pontos da Curva::ERRO NA LEITURA DO ARQUIVO" << std::endl;
+		}
+	}
 }
 
