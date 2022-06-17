@@ -82,15 +82,19 @@ public:
         return glm::lookAt(Position[id], Position[id] + Front[id], Up[id]);
     }
 
+    void AtualizaCamera(std::vector <Objeto> objetos){
+        for(int i = 0; i < objetos.size(); i++){
+            escala[objetos[i].id] = objetos[i].escala;
+            positionTranslate[objetos[i].id] = objetos[i].positionTranslate;
+        }
+    }
+
     glm::mat4 GetModelMatrix(glm::mat4 model, Objeto obj, std::vector<glm::vec3*>* pontosCurva)
     {
         int id = obj.id;
         model = glm::rotate(model, angle[id], axis[id]);
         model = glm::translate(model, positionTranslate[id]);
         model = glm::scale(model, glm::vec3(escala[id], escala[id], escala[id]));
-
-        if(obj.escala > 0)
-            escala[obj.id] = obj.escala;
 
         if(obj.hasCurves) {
             if(pontosCurva->size() - 5 == mvm)

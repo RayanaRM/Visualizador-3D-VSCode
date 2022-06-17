@@ -16,14 +16,16 @@ public:
     int id;
     bool hasCurves;
     float escala;
+    glm::vec3 positionTranslate;
 
     // constructor with vectors
-    Objeto(int id, bool isSelected, bool hasCurves, float escala)
+    Objeto(int id, bool isSelected, bool hasCurves, float escala, glm::vec3 positionTranslate)
     {
         this->id = id;
         this->isSelected = isSelected;
         this->hasCurves = hasCurves;
         this->escala = escala;
+        this->positionTranslate = positionTranslate;
     }
 };
 #endif

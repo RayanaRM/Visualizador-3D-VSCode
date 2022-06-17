@@ -100,14 +100,19 @@ int main()
     Shader selectedShader("shaders/shader_model.vs", "shaders/selected_shader_model.fs");
 
     Shader currentShader = ourShader;
-    objetos.push_back(Objeto(0, true, true, 1.0f));
-    objetos.push_back(Objeto(1, false, false, 0.5f));
-    objetos.push_back(Objeto(2, false, false, 0.1f));
+    
+    // TODO: criar objetos de acordo com arquivo
+    objetos.push_back(Objeto(0, true, true, 0.01f, glm::vec3(20.0f, 7.0f, 0.0f)));
+    objetos.push_back(Objeto(1, false, false, 0.03f, glm::vec3(0.0f, 0.0f, 0.0f)));
+    objetos.push_back(Objeto(2, false, false, 0.5f, glm::vec3(0.0f, 1.1f, 0.0f)));
+    objetos.push_back(Objeto(3, false, false, 0.1f, glm::vec3(4.0f, 1.1f, 11.0f)));
 
+    Model modelo1("modelos/c/Chair.obj");
+    Model modelo2("modelos/c/table.obj");
+    Model modelo3("modelos/c/lamp.obj");
+    Model modelo4("modelos/c/s.obj");
 
-    Model modelo1("modelos/Pokemon/Pikachu.obj");
-    Model modelo2("modelos/c/mesa01.obj");
-    Model modelo3("modelos/Pokemon/PikachuF.obj");
+    camera.AtualizaCamera(objetos);
 
     lerArqCurva("originalCurve.txt");
 	ajustarTamanhoCurva(pontosCurva, tamanhoCurva);
@@ -120,9 +125,10 @@ int main()
 
         processInput(window);
 
-        glClearColor(0.933f, 0.933f, 0.929f, 1.0f); //cor de fundo
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //cor de fundo
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
+        // TODO: Usar loop para setar objetos e escolher shader        
         currentShader = (objetos[0].isSelected) ? selectedShader : ourShader;
         currentShader.use();
         setObject(currentShader, objetos[0], modelo1);
@@ -135,6 +141,10 @@ int main()
         currentShader.use();
         setObject(currentShader, objetos[2], modelo3);
 
+        currentShader = (objetos[3].isSelected) ? selectedShader : ourShader;
+        currentShader.use();
+        setObject(currentShader, objetos[3], modelo4);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -146,9 +156,12 @@ int main()
 void processInput(GLFWwindow* window)
 {
     Objeto objeto = objetos[0];
-    for (unsigned int i = 0; i < objetos.size(); i++){
-        objeto = objetos[i].isSelected ? objetos[i] : objetos[0];
+    for(unsigned int i = 0; i < objetos.size(); i++){
+            if(objetos[i].isSelected){
+                objeto = objetos[i];
+            }
     }
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
