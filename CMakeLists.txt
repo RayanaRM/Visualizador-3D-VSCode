@@ -1,19 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
 
-# Generate file for LSP
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
-# TODO: Mudar para nome do projeto
-project(CompGraficaTemplate)
+project(Visualizador3D)
 
-
-# All source files
 file(GLOB SRC_FILES src/*.cpp)
 file(GLOB SRC_FILES_C src/*.c)
 
 add_executable(app ${SRC_FILES} ${SRC_FILES_C})
 
-# C++17 standard
 set_target_properties(app PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED TRUE
