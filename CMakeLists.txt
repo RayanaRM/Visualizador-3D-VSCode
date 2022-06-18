@@ -28,4 +28,7 @@ target_link_libraries(app glfw)
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(app assimp::assimp)
 
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(app nlohmann_json::nlohmann_json)
+
 include_directories("include")

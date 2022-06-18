@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "model.h"
+#include "json_parser.h"
 #include "objeto.h"
 
 #include <iostream>
@@ -41,6 +42,7 @@ string img_name;
 void setObject(Shader shader, Objeto objeto, Model modelo);
 
 vector <Objeto> objetos;
+vector <Model> modelos;
 
 // camera
 Camera camera(glm::vec3(0.0f, 10.0f, 30.0f));
@@ -60,6 +62,10 @@ float angle = 0.0f;
 
 int main()
 {
+    // Le objetos do json
+    JsonParser parser("config.json");
+    objetos = parser.getObjetos();
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -100,17 +106,11 @@ int main()
     Shader selectedShader("shaders/shader_model.vs", "shaders/selected_shader_model.fs");
 
     Shader currentShader = ourShader;
-    
-    // TODO: criar objetos de acordo com arquivo
-    objetos.push_back(Objeto(0, true, true, 0.01f, glm::vec3(20.0f, 7.0f, 0.0f)));
-    objetos.push_back(Objeto(1, false, false, 0.03f, glm::vec3(0.0f, 0.0f, 0.0f)));
-    objetos.push_back(Objeto(2, false, false, 0.5f, glm::vec3(0.0f, 1.1f, 0.0f)));
-    objetos.push_back(Objeto(3, false, false, 0.1f, glm::vec3(4.0f, 1.1f, 11.0f)));
 
-    Model modelo1("modelos/c/Chair.obj");
-    Model modelo2("modelos/c/table.obj");
-    Model modelo3("modelos/c/lamp.obj");
-    Model modelo4("modelos/c/s.obj");
+    // Le caminho dos arquivos
+    for(int i = 0; i < objetos.size(); i++){
+        modelos.push_back(Model(objetos[i].path));
+    }
 
     camera.AtualizaCamera(objetos);
 
@@ -128,22 +128,12 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //cor de fundo
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // TODO: Usar loop para setar objetos e escolher shader        
-        currentShader = (objetos[0].isSelected) ? selectedShader : ourShader;
-        currentShader.use();
-        setObject(currentShader, objetos[0], modelo1);
-
-        currentShader = (objetos[1].isSelected) ? selectedShader : ourShader;
-        currentShader.use();
-        setObject(currentShader, objetos[1], modelo2);
-
-        currentShader = (objetos[2].isSelected) ? selectedShader : ourShader;
-        currentShader.use();
-        setObject(currentShader, objetos[2], modelo3);
-
-        currentShader = (objetos[3].isSelected) ? selectedShader : ourShader;
-        currentShader.use();
-        setObject(currentShader, objetos[3], modelo4);
+        // Loop para setar objetos e escolher shader      
+        for(int i = 0; i < objetos.size(); i++){
+            currentShader = (objetos[i].isSelected) ? selectedShader : ourShader;
+            currentShader.use();
+            setObject(currentShader, objetos[i], modelos[i]);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -218,7 +208,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos;
 
     lastX = xpos;
     lastY = ypos;

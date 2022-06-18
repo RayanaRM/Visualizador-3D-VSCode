@@ -17,15 +17,17 @@ public:
     bool hasCurves;
     float escala;
     glm::vec3 positionTranslate;
+    std::string path;
 
     // constructor with vectors
-    Objeto(int id, bool isSelected, bool hasCurves, float escala, glm::vec3 positionTranslate)
+    Objeto(int id, bool isSelected, bool hasCurves, float escala, glm::vec3 positionTranslate, std::string path)
     {
         this->id = id;
         this->isSelected = isSelected;
         this->hasCurves = hasCurves;
         this->escala = escala;
         this->positionTranslate = positionTranslate;
+        this->path = path;
     }
 };
 #endif
