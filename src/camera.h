@@ -126,19 +126,20 @@ public:
         if (key == U) {
             inc = 0;
         }
-
-        // movimentacao da camera
-        if (key == FORWARD){
-            Position[objeto.id] += Front[objeto.id] * velocity;
-        }
-        if (key == BACKWARD){
-            Position[objeto.id] -= Front[objeto.id] * velocity;
-        }
-        if (key == LEFT){
-            Position[objeto.id] -= Right[objeto.id] * velocity;
-        }
-        if (key == RIGHT){
-            Position[objeto.id] += Right[objeto.id] * velocity;
+        
+        for (int i = 0; i < 4; i++) {
+            if (key == FORWARD) {
+                Position[i] += Front[i] * velocity;
+            }
+            if (key == BACKWARD) {
+                Position[i] -= Front[i] * velocity;
+            }
+            if (key == LEFT) {
+                Position[i] -= Right[i] * velocity;
+            }
+            if (key == RIGHT) {
+                Position[i] += Right[i] * velocity;
+            }
         }
 
         // Rota��o
