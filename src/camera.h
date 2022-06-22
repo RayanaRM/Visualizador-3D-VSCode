@@ -100,7 +100,6 @@ public:
             if(pontosCurva->size() - 5 == mvm)
                 mvm = 0;
 
-            model = glm::translate(model, glm::vec3(pontosCurva->at(mvm)->x, pontosCurva->at(mvm)->y, pontosCurva->at(mvm)->z));
             angle[id] = -calcularAnguloOBJ(mvm, mvm + 5, pontosCurva);
             mvm++;
         }					

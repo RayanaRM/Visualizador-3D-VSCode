@@ -6,6 +6,8 @@
       "hasCurves": true,
       "escala": 0.01,
       "positionTranslate": [20.0, 7.0, 0.0],
+      "lightColor": [0.5, 0.5, 0.5],
+      "lightPosition": [0.0, 5.0, 2.0],
       "path": "modelos/c/Chair.obj"
     },
     {
@@ -14,6 +16,8 @@
       "hasCurves": false,
       "escala": 0.03,
       "positionTranslate": [0.0, 0.0, 0.0],
+      "lightColor": [0.5, 0.5, 0.5],
+      "lightPosition": [0.0, 5.0, 2.0],
       "path": "modelos/c/table.obj"
     },
     {
@@ -22,6 +26,8 @@
       "hasCurves": false,
       "escala": 0.5,
       "positionTranslate": [0.0, 1.1, 0.0], 
+      "lightColor": [0.5, 0.5, 0.5],
+      "lightPosition": [0.0, 5.0, 2.0],
       "path": "modelos/c/lamp.obj"
     },
     {
@@ -30,6 +36,8 @@
       "hasCurves": false,
       "escala": 0.1,
       "positionTranslate": [4.0, 1.1, 11.0],
+      "lightColor": [0.5, 0.5, 0.5],
+      "lightPosition": [0.0, 5.0, 2.0],
       "path": "modelos/c/s.obj"
     }
   ]

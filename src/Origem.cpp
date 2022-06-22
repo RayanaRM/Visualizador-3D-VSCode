@@ -115,7 +115,6 @@ int main()
     camera.AtualizaCamera(objetos);
 
     lerArqCurva("originalCurve.txt");
-	ajustarTamanhoCurva(pontosCurva, tamanhoCurva);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -225,11 +224,11 @@ void setObject(Shader shader, Objeto objeto, Model modelo)
 {
         // iluminação
         GLint lightColorLoc = glGetUniformLocation(shader.ID, "lightColor");
-        glUniform3f(lightColorLoc, 0.5f, 0.5f, 0.5f);
+        glUniform3f(lightColorLoc, objeto.lightColor[0], objeto.lightColor[1], objeto.lightColor[2]);
         GLint lightPosLoc = glGetUniformLocation(shader.ID, "lightPos");
-        glUniform3f(lightPosLoc, 0.0f, 5.0f, 2.0f);
+        glUniform3f(lightPosLoc, objeto.lightPosition[0], objeto.lightPosition[1], objeto.lightPosition[2]);
         GLint viewPosLoc = glGetUniformLocation(shader.ID, "viewPos");
-        glUniform3f(viewPosLoc, 0.0f, 10.0f, 30.0f); // mudar para usar posição da câmera
+        glUniform3f(viewPosLoc, 0.0f, 10.0f, 30.0f);
 
         // matrizes view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -267,12 +266,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         else
             objetos[0].isSelected = true;
     }
-}
-void ajustarTamanhoCurva(std::vector<glm::vec3*>* points, float factor) {
-	for (int i = 0; i < points->size(); i++) {
-		scaledCurvePoints->push_back(new glm::vec3(points->at(i)->x*factor, points->at(i)->y, points->at(i)->z*factor));
-	}
-	pontosCurva = scaledCurvePoints;
 }
 
 void lerArqCurva(const GLchar* path) {
